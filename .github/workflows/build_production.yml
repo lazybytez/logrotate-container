@@ -1,6 +1,6 @@
 # Continues deployment workflow to automatically
 # build latest Docker image on tag creation.
-name: Build Edge
+name: Build Production
 
 on:
   push:
