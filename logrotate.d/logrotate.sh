@@ -24,7 +24,6 @@ EOF
 readonly logrotate_logstatus=${LOGROTATE_STATUSFILE:-"/logrotate-status/logrotate.status"}
 
 logrotate_olddir=""
-
 function resolveOldDir() {
   if [ -n "${LOGROTATE_OLDDIR}" ]; then
     logrotate_olddir="olddir "${LOGROTATE_OLDDIR}
@@ -69,7 +68,6 @@ logrotate_interval=${LOGROTATE_INTERVAL:-""}
 logrotate_copies=${LOGROTATE_COPIES:-"5"}
 
 logrotate_size=""
-
 function resolveLogrotateSize() {
   if [ -n "${LOGROTATE_SIZE}" ]; then
     logrotate_size="size "${LOGROTATE_SIZE}
@@ -77,7 +75,6 @@ function resolveLogrotateSize() {
 }
 
 logrotate_minsize=""
-
 function resolveMinSize() {
   if [ -n "${LOGROTATE_MINSIZE}" ]; then
     logrotate_minsize="minsize ${LOGROTATE_MINSIZE}"
@@ -85,7 +82,6 @@ function resolveMinSize() {
 }
 
 logrotate_maxage=""
-
 function resolveMaxAge() {
   if [ -n "${LOGROTATE_MAXAGE}" ]; then
     logrotate_maxage="maxage ${LOGROTATE_MAXAGE}"
@@ -93,7 +89,6 @@ function resolveMaxAge() {
 }
 
 logrotate_autoupdate=true
-
 function resolveLogrotateAutoupdate() {
   if [ -n "${LOGROTATE_AUTOUPDATE}" ]; then
     logrotate_autoupdate="$(echo ${LOGROTATE_AUTOUPDATE,,})"
@@ -101,9 +96,7 @@ function resolveLogrotateAutoupdate() {
 }
 
 logrotate_prerotate=${LOGROTATE_PREROTATE_COMMAND:-""}
-
 logrotate_postrotate=${LOGROTATE_POSTROTATE_COMMAND:-""}
-
 logrotate_dateformat=${LOGROTATE_DATEFORMAT:-""}
 
 resolveSysloggerCommand

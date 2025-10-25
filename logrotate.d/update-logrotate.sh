@@ -9,7 +9,7 @@ set -e
 source /usr/bin/logrotate.d/logrotate.sh
 source /usr/bin/logrotate.d/logrotate-config.sh
 
-resetConfigurationFile
 
-#Create Logrotate Conf
+# Reset and then regenerate logrotate config
+resetConfigurationFile
 source /usr/bin/logrotate.d/logrotate-create-config.sh

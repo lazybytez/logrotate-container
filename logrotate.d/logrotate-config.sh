@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Helper functions for manipulating logrotate configurationsfile
+# Helper functions for manipulating logrotate configuration file
 
 function createLogrotateConfigurationEntry() {
   local file="$1"
@@ -18,6 +18,7 @@ function createLogrotateConfigurationEntry() {
   local conf_prerotate="${13}"
   local conf_postrotate="${14}"
   local new_log=
+
   new_log=${file}" {"
   if [ "$file_user" != "UNKNOWN" ] && [ "$file_owner" != "UNKNOWN" ]; then
     new_log=${new_log}"\n  su ${file_user} ${file_owner}"

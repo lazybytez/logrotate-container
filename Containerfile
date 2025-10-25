@@ -11,16 +11,16 @@ ENV CONTAINER_UID=${CONTAINER_UID} \
 # Install logrotate and go-cron - also create logrotate user and group
 RUN addgroup -g $CONTAINER_GID logrotate && \
     adduser -u $CONTAINER_UID -G logrotate -h /usr/bin/logrotate.d -s /bin/bash -S logrotate && \
-    apk add --update tar gzip wget tzdata && \
+    apk add --update bash tar gzip tzdata tini && \
     if  [ "${LOGROTATE_VERSION}" = "latest" ]; \
     then apk add logrotate ; \
     else apk add "logrotate=${LOGROTATE_VERSION}"; \
     fi && \
     mkdir -p /usr/bin/logrotate.d && \
-    wget --no-check-certificate -O /tmp/go-cron.tar.gz https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz && \
-    tar xvf /tmp/go-cron.tar.gz -C /usr/bin && \
-    apk del wget && \
     rm -rf /var/cache/apk/* && rm -rf /tmp/*
+
+# Install ofelia for cronjob scheduling
+COPY --from=docker.io/mcuadros/ofelia:0.3 /usr/bin/ofelia /usr/bin/ofelia
 
 # Available environment variables for this container
 ENV LOGROTATE_OLDDIR= \
