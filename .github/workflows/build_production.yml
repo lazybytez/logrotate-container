@@ -1,5 +1,5 @@
 # Continues deployment workflow to automatically
-# build edge Docker image on push to main branch.
+# build latest Docker image on tag creation.
 name: Build Edge
 
 on:
