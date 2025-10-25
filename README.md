@@ -3,7 +3,6 @@
 [![gh-commit-badge][gh-commit-badge]][gh-commit]
 [![gh-contributors-badge][gh-contributors-badge]][gh-contributors]
 [![gh-stars-badge][gh-stars-badge]][gh-stars]
-[![gh-downloads-badge][gh-downloads-badge]][gh-downloads-badge]
 
 ## Description
 
@@ -110,8 +109,7 @@ the [How to Contribute][gh-contribute] document.
 [gh-commit]: https://github.com/lazybytez/logrotate-container/commits/main
 [gh-contributors-badge]: https://img.shields.io/github/contributors/lazybytez/logrotate-container?style=for-the-badge&colorA=302D41&colorB=89dceb
 [gh-contributors]: https://github.com/lazybytez/logrotate-container/graphs/contributors
-[gh-stars-badge]: https://img.shields.io/github/stars/lazybytez?style=for-the-badge&colorA=302D41&colorB=f9e2af
-[gh-downloads-badge]: https://img.shields.io/github/downloads/lazybytez/logrotate-container/total?style=for-the-badge&colorA=302D41&colorB=cba6f7
+[gh-stars-badge]: https://img.shields.io/github/stars/lazybytez/logrotate-container?style=for-the-badge&colorA=302D41&colorB=f9e2af
 [gh-stars]: https://github.com/lazybytez/logrotate-container/stargazers
 [gh-contribute]: https://github.com/lazybytez/.github/blob/main/docs/CONTRIBUTING.md
 [gh-codeofconduct]: https://github.com/lazybytez/.github/blob/main/docs/CODE_OF_CONDUCT.md
