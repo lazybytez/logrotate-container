@@ -58,19 +58,20 @@ services:
 
 ## Environment variables
 
--   `LOGS_DIRECTORIES` (required) — space separated directories to scan, e.g. "/var/log /var/lib/docker/containers"
--   `LOG_FILE_ENDINGS` — space separated file extensions (default: "log")
--   `LOGROTATE_INTERVAL` — hourly|daily|weekly|monthly|yearly (affects logrotate rules)
--   `LOGROTATE_CRONSCHEDULE` — cron expression for the schedule; default is suitable for interval
--   `LOGROTATE_COPIES` — number of rotated copies to keep (default 5)
--   `LOGROTATE_SIZE` — trigger rotate when file exceeds size (e.g. 100k, 10M)
--   `LOGROTATE_COMPRESSION` — set to "compress" to enable compression
--   `LOGROTATE_DELAYCOMPRESS` — "false" to disable default delaycompress (when compression enabled)
--   `LOGROTATE_MODE` — e.g. "create 0644" to change rotate mode (default: copytruncate)
--   `LOGROTATE_OLDDIR` — directory to move old logs into
--   `LOGROTATE_STATUSFILE` — path to logrotate status file
--   `LOGROTATE_PARAMETERS` — raw flags passed to logrotate (e.g. "vdf")
--   `LOGROTATE_PREROTATE_COMMAND` / `LOGROTATE_POSTROTATE_COMMAND` — scripts/commands to run
+-   `LOGS_DIRECTORIES` (required) - space separated directories to scan, e.g. "/var/log /var/lib/docker/containers"
+-   `LOG_FILE_ENDINGS` - space separated file extensions (default: "log")
+-   `LOGROTATE_INTERVAL` - hourly|daily|weekly|monthly|yearly (affects logrotate rules)
+-   `LOGROTATE_CRONSCHEDULE` - cron expression for the schedule; default is suitable for interval
+-   `LOGROTATE_COPIES` - number of rotated copies to keep (default 5)
+-   `LOGROTATE_SIZE` - trigger rotate when file exceeds size (e.g. 100k, 10M)
+-   `LOGROTATE_COMPRESSION` - set to "compress" to enable compression
+-   `LOGROTATE_DELAYCOMPRESS` - "false" to disable default delaycompress (when compression enabled)
+-   `LOGROTATE_MODE` - e.g. "create 0644" to change rotate mode (default: copytruncate)
+-   `LOGROTATE_OLDDIR` - directory to move old logs into
+-   `LOGROTATE_STATUSFILE` - path to logrotate status file
+-   `LOGROTATE_PARAMETERS` - raw flags passed to logrotate (e.g. "vdf")
+-   `LOGROTATE_PREROTATE_COMMAND` / `LOGROTATE_POSTROTATE_COMMAND` - scripts/commands to run
+-   `LOGROTATE_AUTOUPDATE` - regenerate logrotate configuration on each cron execution
 
 ## Examples & notes
 

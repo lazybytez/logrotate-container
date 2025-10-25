@@ -15,21 +15,18 @@ if [ -n "${DELAYED_START}" ]; then
   sleep ${DELAYED_START}
 fi
 
-#Create Logrotate Conf
+# Create logrotate config
 source /usr/bin/logrotate.d/logrotate-create-config.sh
 
 cat /usr/bin/logrotate.d/logrotate.conf
 
-# ----- Crontab Generation ------
-
+# Crontab Generation
 logrotate_parameters=""
-
 if [ -n "${LOGROTATE_PARAMETERS}" ]; then
   logrotate_parameters="-"${LOGROTATE_PARAMETERS}
 fi
 
 logrotate_cronlog=""
-
 if [ -n "${LOGROTATE_LOGFILE}" ] && [ -z "${SYSLOGGER}"]; then
   logrotate_cronlog=" 2>&1 | tee -a "${LOGROTATE_LOGFILE}
 else
@@ -39,7 +36,6 @@ else
 fi
 
 logrotate_croninterval="1 0 0 * * *"
-
 if [ -n "${LOGROTATE_INTERVAL}" ]; then
   case "$LOGROTATE_INTERVAL" in
     hourly)
@@ -69,17 +65,27 @@ fi
 
 logrotate_cron_timetable="/usr/sbin/logrotate ${logrotate_parameters} --state=${logrotate_logstatus} /usr/bin/logrotate.d/logrotate.conf ${logrotate_cronlog}"
 
-# ----- Cron Start ------
-
+# Cron Startup
 if [ "$1" = 'cron' ]; then
   if [ ${logrotate_autoupdate} = "true" ]; then
-    exec /usr/bin/go-cron "${logrotate_croninterval}" /bin/bash -c "/usr/bin/logrotate.d/update-logrotate.sh; ${logrotate_cron_timetable}"
+    mkdir -p /etc/ofelia
+	cat <<EOF > /etc/ofelia/schedule-autoupdate.ini
+[job-local "logrotate-with-autoupdate"]
+schedule = ${logrotate_croninterval}
+command = /bin/bash -c \"/usr/bin/logrotate.d/update-logrotate.sh && ${logrotate_cron_timetable}\"
+EOF
+
+	exec ofelia daemon --config /etc/ofelia/schedule-autoupdate.ini
     exit
   fi
+	mkdir -p /etc/ofelia
+	cat <<EOF > /etc/ofelia/schedule-standard.ini
+[job-local "logrotate"]
+schedule = ${logrotate_croninterval}
+command = /bin/bash -c \"${logrotate_cron_timetable}\"
+EOF
 
-  exec /usr/bin/go-cron "${logrotate_croninterval}" /bin/bash -c "${logrotate_cron_timetable}"
+	exec ofelia daemon --config /etc/ofelia/schedule-standard.ini
 fi
-
-#-----------------------
 
 exec "$@"
