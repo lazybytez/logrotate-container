@@ -69,23 +69,23 @@ logrotate_cron_timetable="/usr/sbin/logrotate ${logrotate_parameters} --state=${
 if [ "$1" = 'cron' ]; then
   if [ ${logrotate_autoupdate} = "true" ]; then
     mkdir -p /etc/ofelia
-	cat <<EOF > /etc/ofelia/schedule-autoupdate.ini
+  cat <<EOF > /etc/ofelia/schedule-autoupdate.ini
 [job-local "logrotate-with-autoupdate"]
 schedule = ${logrotate_croninterval}
 command = /bin/bash -c \"/usr/bin/logrotate.d/update-logrotate.sh && ${logrotate_cron_timetable}\"
 EOF
 
-	exec ofelia daemon --config /etc/ofelia/schedule-autoupdate.ini
+  exec ofelia daemon --config /etc/ofelia/schedule-autoupdate.ini
     exit
   fi
-	mkdir -p /etc/ofelia
-	cat <<EOF > /etc/ofelia/schedule-standard.ini
+  mkdir -p /etc/ofelia
+  cat <<EOF > /etc/ofelia/schedule-standard.ini
 [job-local "logrotate"]
 schedule = ${logrotate_croninterval}
 command = /bin/bash -c \"${logrotate_cron_timetable}\"
 EOF
 
-	exec ofelia daemon --config /etc/ofelia/schedule-standard.ini
+  exec ofelia daemon --config /etc/ofelia/schedule-standard.ini
 fi
 
 exec "$@"
