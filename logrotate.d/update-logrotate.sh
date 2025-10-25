@@ -7,9 +7,9 @@ set -e
 [[ ${DEBUG} == true ]] && set -x
 
 source /usr/bin/logrotate.d/logrotate.sh
-source /usr/bin/logrotate.d/logrotateConf.sh
+source /usr/bin/logrotate.d/logrotate-config.sh
 
 resetConfigurationFile
 
 #Create Logrotate Conf
-source /usr/bin/logrotate.d/logrotateCreateConf.sh
+source /usr/bin/logrotate.d/logrotate-create-config.sh
