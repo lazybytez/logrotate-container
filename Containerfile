@@ -1,20 +1,24 @@
 FROM docker.io/library/alpine:3.22 AS production
 
 # Container build arguments
-ARG LOGROTATE_VERSION=latest
-ARG CONTAINER_UID=1000
-ARG CONTAINER_GID=1000
+ARG image_version=edge
+ARG build_commit_sha=unknown
+ARG logrotate_version=latest
+ARG container_uid=1000
+ARG container_gid=1000
 
-ENV CONTAINER_UID=${CONTAINER_UID} \
-    CONTAINER_GID=${CONTAINER_GID}
+ENV container_uid=${container_uid} \
+    container_gid=${container_gid} \
+    LOGROTATE_CONTAINER_VERSION=${image_version} \
+    LOGROTATE_CONTAINER_BUILD_COMMIT=${build_commit_sha}
 
 # Install logrotate and go-cron - also create logrotate user and group
-RUN addgroup -g $CONTAINER_GID logrotate && \
-    adduser -u $CONTAINER_UID -G logrotate -h /usr/bin/logrotate.d -s /bin/bash -S logrotate && \
+RUN addgroup -g $container_gid logrotate && \
+    adduser -u $container_uid -G logrotate -h /usr/bin/logrotate.d -s /bin/bash -S logrotate && \
     apk add --update bash tar gzip tzdata tini && \
-    if  [ "${LOGROTATE_VERSION}" = "latest" ]; \
+    if  [ "${logrotate_version}" = "latest" ]; \
     then apk add logrotate ; \
-    else apk add "logrotate=${LOGROTATE_VERSION}"; \
+    else apk add "logrotate=${logrotate_version}"; \
     fi && \
     mkdir -p /usr/bin/logrotate.d && \
     rm -rf /var/cache/apk/* && rm -rf /tmp/*
