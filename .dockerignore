@@ -2,6 +2,5 @@
 .github
 .editorconfig
 commitlint.config.cjs
-scripts
 README.md
-logs
+LICENSE
