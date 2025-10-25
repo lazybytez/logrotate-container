@@ -1,5 +1,7 @@
 .git
+.github
+.editorconfig
+commitlint.config.cjs
 scripts
 README.md
-.vagrant
 logs
