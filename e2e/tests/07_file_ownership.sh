@@ -22,15 +22,20 @@ end_test
 
 container_stop "$cid"
 
-# --- su directive present for mounted file ---
+# --- su directive present for file with known owner ---
 
-dir=$(create_log_dir "app.log")
-cid=$(start_container -v "$dir:/logs" -e LOGS_DIRECTORIES="/logs")
+dir=$(create_log_dir)
+cid=$(start_container -e LOGS_DIRECTORIES="/test-logs")
+
+container_exec "$cid" mkdir -p /test-logs
+container_exec "$cid" sh -c 'echo "owned log line" > /test-logs/owned.log'
+container_exec "$cid" chown root:root /test-logs/owned.log
+container_exec "$cid" bash /usr/bin/logrotate.d/update-logrotate.sh
 config=$(get_config "$cid")
 
-begin_test "su directive present for mounted file"
-assert_contains "$config" "/logs/app.log"
-assert_matches "$config" "su .* .*"
+begin_test "su directive present for file with known owner"
+assert_contains "$config" "/test-logs/owned.log"
+assert_matches "$config" "su root root"
 end_test
 
 container_stop "$cid"

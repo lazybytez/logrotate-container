@@ -36,6 +36,7 @@ suites_total=0
 suites_passed=0
 suites_failed=0
 failed_names=()
+suite_results=()
 
 # Determine which suites to run
 if [ $# -gt 0 ]; then
@@ -62,9 +63,11 @@ for test_file in "${test_files[@]}"; do
   suites_total=$((suites_total + 1))
   if bash "$test_file"; then
     suites_passed=$((suites_passed + 1))
+    suite_results+=("pass:$suite")
   else
     suites_failed=$((suites_failed + 1))
     failed_names+=("$suite")
+    suite_results+=("fail:$suite")
   fi
 done
 
@@ -73,6 +76,30 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  SUMMARY"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Suites: $suites_total | Passed: $suites_passed | Failed: $suites_failed"
+
+if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+  {
+    if [ ${#failed_names[@]} -gt 0 ]; then
+      echo "## :x: E2E Tests — ${suites_failed} failed"
+    else
+      echo "## :white_check_mark: E2E Tests — All passed"
+    fi
+    echo ""
+    echo "| Suite | Result |"
+    echo "|---|---|"
+    for entry in "${suite_results[@]}"; do
+      status="${entry%%:*}"
+      name="${entry#*:}"
+      if [ "$status" = "pass" ]; then
+        echo "| $name | :white_check_mark: Pass |"
+      else
+        echo "| $name | :x: Fail |"
+      fi
+    done
+    echo ""
+    echo "**Suites:** $suites_total | **Passed:** $suites_passed | **Failed:** $suites_failed"
+  } >> "$GITHUB_STEP_SUMMARY"
+fi
 
 if [ ${#failed_names[@]} -gt 0 ]; then
   echo "  Failed: ${failed_names[*]}"
