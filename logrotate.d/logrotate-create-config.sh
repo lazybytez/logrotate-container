@@ -21,44 +21,34 @@ else
 fi
 
 logs_ending="log"
-LOGS_FILE_ENDINGS_INSTRUCTION=""
 if [ -n "${LOG_FILE_ENDINGS}" ]; then
-  logs_ending=${LOG_FILE_ENDINGS}
+  logs_ending="${LOG_FILE_ENDINGS}"
 fi
 
-SAVEIFS=$IFS
-IFS=' '
-COUNTER=0
-for ending in $logs_ending
-do
-  if [ "$COUNTER" -eq "0" ]; then
-    LOGS_FILE_ENDINGS_INSTRUCTION="$LOGS_FILE_ENDINGS_INSTRUCTION -iname "*.${ending}""
-  else
-    LOGS_FILE_ENDINGS_INSTRUCTION="$LOGS_FILE_ENDINGS_INSTRUCTION -o -iname "*.${ending}""
+find_filter=()
+for ending in $logs_ending; do
+  if [ ${#find_filter[@]} -gt 0 ]; then
+    find_filter+=("-o")
   fi
-  let COUNTER=COUNTER+1
+  find_filter+=("-iname" "*.${ending}")
 done
-IFS=$SAVEIFS
 
-# Check if regex search is enabled
 if [ -n "${LOGS_FILE_REGEX}" ]; then
-  if [ "$COUNTER" -eq "0" ]; then
-    LOGS_FILE_ENDINGS_INSTRUCTION="-regex $LOGS_FILE_REGEX"
-  else
-    LOGS_FILE_ENDINGS_INSTRUCTION="$LOGS_FILE_ENDINGS_INSTRUCTION -o -regex $LOGS_FILE_REGEX"
+  if [ ${#find_filter[@]} -gt 0 ]; then
+    find_filter+=("-o")
   fi
+  find_filter+=("-regex" "${LOGS_FILE_REGEX}")
 fi
 
-for d in ${log_dirs}
-do
-  log_files=$(find ${d} -type f $LOGS_FILE_ENDINGS_INSTRUCTION) || continue
-  for f in ${log_files};
-  do
-    if [ -f "${f}" ]; then
-      echo "Found new file $f, Processing..."
-      handleSingleFile "$f"
-    fi
-  done
+for d in ${log_dirs}; do
+  if [ ! -d "${d}" ]; then
+    continue
+  fi
+
+  while IFS= read -r -d '' f; do
+    echo "Found new file $f, Processing..."
+    handleSingleFile "$f"
+  done < <(find "${d}" -type f \( "${find_filter[@]}" \) -print0 2>/dev/null)
 done
 
 # Take all log files in subfolder's
