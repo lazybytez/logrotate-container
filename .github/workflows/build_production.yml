@@ -10,6 +10,20 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavour: alpine
+            containerfile: Containerfile.alpine
+            tag_suffix: ""
+          - flavour: debian
+            containerfile: Containerfile.debian
+            tag_suffix: "-debian"
+          - flavour: ubi
+            containerfile: Containerfile.ubi
+            tag_suffix: "-ubi"
+    name: build (${{ matrix.flavour }})
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,22 +59,21 @@ jobs:
             ghcr.io/lazybytez/logrotate-container
             git.lazybytez.cloud/lazybytez/logrotate-container
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{version}},suffix=${{ matrix.tag_suffix }}
+            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.tag_suffix }}
+            type=semver,pattern={{major}},suffix=${{ matrix.tag_suffix }}
 
       - name: Retrieve commit SHA
         id: commit_sha
         run: |
           echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      # Deploy stage image to Gitea Container Registry
       - name: Build and publish images
         uses: docker/build-push-action@v6
         id: build_push
         with:
           context: .
-          file: ./Containerfile
+          file: ./${{ matrix.containerfile }}
           platforms: linux/amd64,linux/arm64
           target: production
           push: true

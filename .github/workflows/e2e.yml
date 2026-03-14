@@ -9,6 +9,11 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavour: [alpine, debian, ubi]
+    name: e2e (${{ matrix.flavour }})
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,3 +25,5 @@ jobs:
 
       - name: Run e2e tests
         run: ./e2e/run-tests.sh
+        env:
+          CONTAINERFILE: Containerfile.${{ matrix.flavour }}
