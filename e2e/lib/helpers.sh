@@ -112,29 +112,29 @@ create_log_dir() {
 _wait_for_config() {
   local cid="$1"
   local timeout="${2:-10}"
-  local elapsed=0
-  while [ "$elapsed" -lt "$timeout" ]; do
+  local start=$SECONDS
+  while (( SECONDS - start < timeout )); do
     if $CONTAINER_RUNTIME exec "$cid" test -e /usr/bin/logrotate.d/logrotate.conf 2>/dev/null; then
       return 0
     fi
     sleep 0.5
-    elapsed=$((elapsed + 1))
   done
   echo "WARNING: timed out waiting for logrotate config" >&2
+  return 1
 }
 
 _wait_for_ofelia() {
   local cid="$1"
   local timeout="${2:-15}"
-  local elapsed=0
-  while [ "$elapsed" -lt "$timeout" ]; do
+  local start=$SECONDS
+  while (( SECONDS - start < timeout )); do
     if $CONTAINER_RUNTIME exec "$cid" sh -c 'test -d /etc/ofelia && ls /etc/ofelia/*.ini' 2>/dev/null | grep -q '.ini'; then
       return 0
     fi
     sleep 0.5
-    elapsed=$((elapsed + 1))
   done
   echo "WARNING: timed out waiting for ofelia config" >&2
+  return 1
 }
 
 # Start the container with CMD="sleep 120" so the entrypoint generates
