@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Docker with buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           driver: docker
 
