@@ -171,8 +171,7 @@ config=$(get_config "$cid")
 
 begin_test "directories named with .log extension are not matched"
 assert_contains "$config" "/logs/real.log"
-# The directory entry should not appear as a logrotate block
-# (find uses -type f so directories are excluded)
+assert_not_contains "$config" "/logs/fake.log"
 end_test
 
 container_stop "$cid"

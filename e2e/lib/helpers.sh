@@ -109,6 +109,34 @@ create_log_dir() {
   echo "$dir"
 }
 
+_wait_for_config() {
+  local cid="$1"
+  local timeout="${2:-10}"
+  local elapsed=0
+  while [ "$elapsed" -lt "$timeout" ]; do
+    if $CONTAINER_RUNTIME exec "$cid" test -e /usr/bin/logrotate.d/logrotate.conf 2>/dev/null; then
+      return 0
+    fi
+    sleep 0.5
+    elapsed=$((elapsed + 1))
+  done
+  echo "WARNING: timed out waiting for logrotate config" >&2
+}
+
+_wait_for_ofelia() {
+  local cid="$1"
+  local timeout="${2:-15}"
+  local elapsed=0
+  while [ "$elapsed" -lt "$timeout" ]; do
+    if $CONTAINER_RUNTIME exec "$cid" sh -c 'test -d /etc/ofelia && ls /etc/ofelia/*.ini' 2>/dev/null | grep -q '.ini'; then
+      return 0
+    fi
+    sleep 0.5
+    elapsed=$((elapsed + 1))
+  done
+  echo "WARNING: timed out waiting for ofelia config" >&2
+}
+
 # Start the container with CMD="sleep 120" so the entrypoint generates
 # config and then keeps the container alive for inspection.
 # Pass any extra docker flags (e.g. -e, -v) as arguments.
@@ -118,7 +146,7 @@ start_container() {
   local cid
   cid=$($CONTAINER_RUNTIME run -d --name "$name" "$@" "$IMAGE_NAME" sleep 120)
   _CLEANUP_CONTAINERS+=("$cid")
-  sleep 2
+  _wait_for_config "$cid" 10
   echo "$cid"
 }
 
@@ -129,7 +157,7 @@ start_container_cron() {
   local cid
   cid=$($CONTAINER_RUNTIME run -d --name "$name" "$@" "$IMAGE_NAME" cron)
   _CLEANUP_CONTAINERS+=("$cid")
-  sleep 3
+  _wait_for_ofelia "$cid" 15
   echo "$cid"
 }
 

@@ -6,7 +6,6 @@ source "$SCRIPT_DIR/../lib/helpers.sh"
 
 # --- su directive present for root-owned file ---
 
-dir=$(create_log_dir)
 cid=$(start_container -e LOGS_DIRECTORIES="/test-logs")
 
 # Create file as root inside the container
@@ -24,7 +23,6 @@ container_stop "$cid"
 
 # --- su directive present for file with known owner ---
 
-dir=$(create_log_dir)
 cid=$(start_container -e LOGS_DIRECTORIES="/test-logs")
 
 container_exec "$cid" mkdir -p /test-logs
@@ -42,7 +40,6 @@ container_stop "$cid"
 
 # --- su directive for logrotate user (UID 1000) ---
 
-dir=$(create_log_dir)
 cid=$(start_container -e LOGS_DIRECTORIES="/test-logs")
 
 container_exec "$cid" mkdir -p /test-logs
@@ -59,7 +56,6 @@ container_stop "$cid"
 
 # --- Mixed ownership across files ---
 
-dir=$(create_log_dir)
 cid=$(start_container -e LOGS_DIRECTORIES="/test-logs")
 
 container_exec "$cid" mkdir -p /test-logs

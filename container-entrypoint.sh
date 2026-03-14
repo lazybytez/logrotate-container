@@ -27,7 +27,7 @@ if [ -n "${LOGROTATE_PARAMETERS}" ]; then
 fi
 
 logrotate_cronlog=""
-if [ -n "${LOGROTATE_LOGFILE}" ] && [ -z "${SYSLOGGER}"]; then
+if [ -n "${LOGROTATE_LOGFILE}" ] && [ -z "${SYSLOGGER}" ]; then
   logrotate_cronlog=" 2>&1 | tee -a "${LOGROTATE_LOGFILE}
 else
   if [ -n "${SYSLOGGER}" ]; then
