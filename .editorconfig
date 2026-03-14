@@ -25,7 +25,7 @@ indent_size = 2
 [.gitmodules]
 indent_style = tab
 
-[Dockerfile]
+[{Dockerfile,Containerfile}]
 indent_style = tab
 
 [{Makefile,*.mk}]
