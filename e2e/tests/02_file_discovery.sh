@@ -162,6 +162,60 @@ end_test
 
 container_stop "$cid"
 
+# --- Files without matching ending are excluded ---
+
+dir=$(create_log_dir "access.log" "error.log" "do-not-rotate")
+cid=$(start_container -v "$dir:/logs" \
+  -e LOGS_DIRECTORIES="/logs" \
+  -e LOG_FILE_ENDINGS="log")
+config=$(get_config "$cid")
+
+begin_test "files without matching ending are excluded"
+assert_contains "$config" "/logs/access.log"
+assert_contains "$config" "/logs/error.log"
+assert_not_contains "$config" "do-not-rotate"
+end_test
+
+container_stop "$cid"
+
+# --- Rotated files with ending in middle of name are excluded ---
+
+dir=$(create_log_dir "access.log" "access.log-20251021")
+cid=$(start_container -v "$dir:/logs" \
+  -e LOGS_DIRECTORIES="/logs" \
+  -e LOG_FILE_ENDINGS="log")
+config=$(get_config "$cid")
+
+begin_test "rotated files with date suffix are not matched"
+assert_contains "$config" "/logs/access.log"
+assert_not_contains "$config" "access.log-20251021"
+end_test
+
+container_stop "$cid"
+
+# --- Glob expansion in CWD does not corrupt file discovery ---
+# Reproduces bug where .log files in the container CWD cause the
+# find -iname pattern to glob-expand, breaking the filter.
+
+dir=$(create_log_dir "access.log" "error.log" "do-not-rotate")
+cid=$(start_container -v "$dir:/logs" \
+  -e LOGS_DIRECTORIES="/logs" \
+  -e LOG_FILE_ENDINGS="log")
+
+# Place .log files in the container's CWD to trigger glob expansion
+container_exec "$cid" sh -c 'touch /dummy.log'
+# Re-run discovery via update-logrotate.sh
+container_exec "$cid" bash /usr/bin/logrotate.d/update-logrotate.sh
+config=$(get_config "$cid")
+
+begin_test "file discovery works even with .log files in container CWD"
+assert_contains "$config" "/logs/access.log"
+assert_contains "$config" "/logs/error.log"
+assert_not_contains "$config" "do-not-rotate"
+end_test
+
+container_stop "$cid"
+
 # --- Only files, not directories, are matched ---
 
 dir=$(create_log_dir "real.log")
