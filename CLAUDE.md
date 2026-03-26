@@ -4,16 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Lightweight Alpine-based side-car container that auto-discovers log files and rotates them using logrotate. Designed to attach to workloads writing logs to disk. Originally forked from blacklabelops/logrotate, now maintained by Lazy Bytez.
+Lightweight side-car container that auto-discovers log files and rotates them using logrotate. Available as Alpine, Debian, and UBI (Red Hat) flavours. Designed to attach to workloads writing logs to disk. Originally forked from blacklabelops/logrotate, now maintained by Lazy Bytez.
 
 ## Build & Run
 
 ```bash
-# Build the container image
-docker build -f Containerfile -t logrotate-container .
+# Build the container image (alpine, debian, or ubi)
+docker build -f Containerfile.alpine -t logrotate-container .
+docker build -f Containerfile.debian -t logrotate-container .
+docker build -f Containerfile.ubi -t logrotate-container .
 
-# Build with specific args
-docker build -f Containerfile -t logrotate-container \
+# Build with specific args (logrotate_version only works with Alpine)
+docker build -f Containerfile.alpine -t logrotate-container \
   --build-arg image_version=1.0.0 \
   --build-arg logrotate_version=latest .
 
@@ -28,8 +30,12 @@ docker run -d \
 ## E2E Tests
 
 ```bash
-# Run all test suites
+# Run all test suites (default: alpine)
 ./e2e/run-tests.sh
+
+# Run a specific flavour
+CONTAINERFILE=Containerfile.debian ./e2e/run-tests.sh
+CONTAINERFILE=Containerfile.ubi ./e2e/run-tests.sh
 
 # Run a single suite
 ./e2e/run-tests.sh 01_config_generation
@@ -50,7 +56,9 @@ Tests require a container runtime (docker or podman). The runner builds the imag
 
 | File | Purpose |
 |---|---|
-| `Containerfile` | Multi-platform Alpine image (amd64/arm64), installs logrotate + ofelia + tini |
+| `Containerfile.alpine` | Alpine-based image (default), uses apk |
+| `Containerfile.debian` | Debian bookworm-slim image, uses apt |
+| `Containerfile.ubi` | UBI 9 minimal image, uses microdnf |
 | `container-entrypoint.sh` | Startup orchestrator: sources helpers, generates config, resolves cron schedule, launches ofelia |
 | `logrotate.d/logrotate.sh` | Helper functions resolving env vars to logrotate directives (compression, sizing, rotation mode) |
 | `logrotate.d/logrotate-config.sh` | Creates individual logrotate config entries with proper ownership (`su user group`) |
@@ -80,7 +88,8 @@ Tests require a container runtime (docker or podman). The runner builds the imag
 ## CI/CD
 
 - **git.yml** — PR validation: branch naming (`feature|hotfix|release|renovate/*`) + commitlint
-- **e2e.yml** — Runs e2e test suites on PRs and pushes to `main`
-- **build_edge.yml** — Push to `main` → builds `edge` tag to ghcr.io and git.lazybytez.cloud
-- **build_production.yml** — Semver tag (`v*.*.*`) → builds versioned tags (full, major.minor, major)
+- **e2e.yml** — Runs e2e test suites for all flavours (alpine, debian, ubi) on PRs and pushes to `main`
+- **build_edge.yml** — Push to `main` → builds `edge` tags for all flavours to ghcr.io and git.lazybytez.cloud
+- **build_production.yml** — Semver tag (`v*.*.*`) → builds versioned tags for all flavours
 - All builds are multi-platform: `linux/amd64`, `linux/arm64`
+- **Tag convention:** Alpine has no suffix (default), others use `-debian`/`-ubi` (e.g., `1.2.3`, `1.2.3-debian`, `1.2.3-ubi`)

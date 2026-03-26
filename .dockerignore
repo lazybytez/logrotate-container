@@ -1,6 +1,10 @@
 .git
 .github
+e2e
 .editorconfig
 commitlint.config.cjs
 README.md
+CLAUDE.md
+TODO.md
 LICENSE
+Containerfile.*

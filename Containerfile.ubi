@@ -1,0 +1,72 @@
+FROM docker.io/library/golang:1.24-bookworm AS ofelia-builder
+ARG OFELIA_COMMIT=4664ab3bf5ce23f070d03459e4d4ce0516a4d6e6
+RUN git clone https://github.com/mcuadros/ofelia.git /src && \
+    cd /src && git checkout ${OFELIA_COMMIT} && \
+    GOTOOLCHAIN=auto CGO_ENABLED=0 go build -o /ofelia .
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS production
+
+# Container build arguments
+ARG image_version=edge
+ARG build_commit_sha=unknown
+ARG container_uid=1000
+ARG container_gid=1000
+ARG TARGETARCH
+
+ENV container_uid=${container_uid} \
+    container_gid=${container_gid} \
+    LOGROTATE_CONTAINER_VERSION=${image_version} \
+    LOGROTATE_CONTAINER_BUILD_COMMIT=${build_commit_sha}
+
+# Install logrotate and dependencies - also create logrotate user and group
+RUN microdnf install -y \
+      bash tar gzip tzdata logrotate shadow-utils findutils && \
+    microdnf clean all && \
+    groupadd -g $container_gid logrotate && \
+    useradd -u $container_uid -g logrotate -d /usr/bin/logrotate.d -s /bin/bash logrotate && \
+    mkdir -p /usr/bin/logrotate.d && \
+    rm -rf /tmp/*
+
+# Install tini (not available in UBI repos, use static binary)
+ADD https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /sbin/tini
+RUN chmod +x /sbin/tini
+
+# Install ofelia for cronjob scheduling
+COPY --from=ofelia-builder /ofelia /usr/bin/ofelia
+
+# Available environment variables for this container
+ENV LOGROTATE_OLDDIR= \
+    LOGROTATE_COMPRESSION= \
+    LOGROTATE_INTERVAL= \
+    LOGROTATE_COPIES= \
+    LOGROTATE_SIZE= \
+    LOGS_DIRECTORIES= \
+    LOG_FILE_ENDINGS= \
+    LOGROTATE_LOGFILE= \
+    LOGROTATE_CRONSCHEDULE= \
+    LOGROTATE_PARAMETERS= \
+    LOGROTATE_STATUSFILE= \
+    LOG_FILE=
+
+# Copy entrypoint and helper scripts
+COPY container-entrypoint.sh /container-entrypoint.sh
+COPY logrotate.d/ /usr/bin/logrotate.d/
+
+# Specify default volumes
+VOLUME ["/logrotate-status"]
+
+# Configure container labels
+## General image informations
+LABEL author="Lazy Bytez"
+LABEL maintainer="contact@lazybytez.de"
+
+## Open Container annotations
+LABEL org.opencontainers.image.title="Logrotate Container"
+LABEL org.opencontainers.image.description="Logrotate container image based on blacklabelops/logrotate"
+LABEL org.opencontainers.image.vendor="Lazy Bytez"
+LABEL org.opencontainers.image.source="https://github.com/lazybytez/logrotate-container"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Set entrypoint and default command
+ENTRYPOINT ["/sbin/tini","--","/container-entrypoint.sh"]
+CMD ["cron"]

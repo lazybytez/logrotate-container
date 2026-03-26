@@ -8,6 +8,7 @@
 #
 # Environment:
 #   CONTAINER_RUNTIME  docker (default) or podman
+#   CONTAINERFILE      Containerfile to build (default: Containerfile.alpine)
 #   IMAGE_NAME         image tag to build/use (default: logrotate-e2e-test)
 
 set -euo pipefail
@@ -16,17 +17,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-docker}"
+CONTAINERFILE="${CONTAINERFILE:-Containerfile.alpine}"
 IMAGE_NAME="${IMAGE_NAME:-logrotate-e2e-test}"
 export CONTAINER_RUNTIME IMAGE_NAME
+
+FLAVOUR="${CONTAINERFILE#Containerfile.}"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Logrotate Container — E2E Tests"
 echo "  Runtime: $CONTAINER_RUNTIME"
+echo "  Flavour: $FLAVOUR"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
 echo "Building image..."
-$CONTAINER_RUNTIME build -f "$PROJECT_DIR/Containerfile" -t "$IMAGE_NAME" "$PROJECT_DIR" || {
+$CONTAINER_RUNTIME build -f "$PROJECT_DIR/$CONTAINERFILE" -t "$IMAGE_NAME" "$PROJECT_DIR" || {
   echo "ERROR: Image build failed." >&2
   exit 1
 }
@@ -80,9 +85,9 @@ echo "  Suites: $suites_total | Passed: $suites_passed | Failed: $suites_failed"
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   {
     if [ ${#failed_names[@]} -gt 0 ]; then
-      echo "## :x: E2E Tests — ${suites_failed} failed"
+      echo "## :x: E2E Tests ($FLAVOUR) — ${suites_failed} failed"
     else
-      echo "## :white_check_mark: E2E Tests — All passed"
+      echo "## :white_check_mark: E2E Tests ($FLAVOUR) — All passed"
     fi
     echo ""
     echo "| Suite | Result |"
